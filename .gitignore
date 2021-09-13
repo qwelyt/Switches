@@ -1,0 +1,6 @@
+# temp-files
+*.*~
+
+# g-code
+*.g
+*.gx
