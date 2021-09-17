@@ -37,6 +37,21 @@ module rube(size=[1,1,1],center=false,r=0.2,type="s"){
   }
 }
 
+module bullet(d=2,r=0.2,h=3){
+  rr=r*2;
+  
+  cylinder(h=h-rr,d=d,center=true);
+  
+  translate([0, 0, h/2-rr/2]){
+    rotate_extrude()translate([(d-rr)/2, 0, 0])circle(d=rr);
+    translate([0,0,-rr/2])cylinder(d=d-rr,h=rr);
+  }
+
+  translate([0, 0, -h/2+rr/2]){
+    rotate_extrude()translate([(d-rr)/2, 0, 0])circle(d=rr);
+    translate([0,0,-rr/2])cylinder(d=d-rr,h=rr);
+  }
+}
 module stemprofile(extra=0,notch=5.6){
   ooo(){
     x=4.4+extra;
@@ -231,94 +246,141 @@ module bottom(){
       translate([0,0,-h/2])cube([3.5,2.1,0.01],center=true);
     }
   }
-  difference(){
-    union(){ // main block
-      translate([0,0,0.7])linear_extrude(0.8)ooo(2)square([tw,tw],center=true);
-      translate([0,0,-0.3])linear_extrude(1)ooo(2)square([13.8,13.6],center=true);
-      
-      translate([0,0,-0.3])hull(){
-        translate([0,0,0])linear_extrude(0.01)ooo(2)square([13.8,13.6],center=true);
-        translate([0,0,-1.2])linear_extrude(0.01)ooo(2)square([13.1,13.1],center=true);
-      }
-    }
-    
-    // holes for the little pegs on the underside of the top
-    translate([bx/2-0.8,by/2-0.8,0])undersidePegOnTop();
-    translate([-bx/2+0.8,by/2-0.8,0])undersidePegOnTop();
-    translate([bx/2-0.8,-by/2+0.8,0])undersidePegOnTop();
-    translate([-bx/2+0.8,-by/2+0.8,0])undersidePegOnTop();
-    
-    // Big hole for diodes
-    translate([-tw/2+3.25/2+1.2,-0.125,0])rube([3.25,5.05,5],center=true);
-    // clickbar holder
-    translate([-tw/2+3.2/2+1.2,-by/3.128,h/2-2.5/2+0.2])hull(){
-      rube([1.8,1.9,2.7],center=true);
-      translate([1.9/4.07,0,1.1])linear_extrude(0.01)ooo(0.2)square([2.4,1.9],center=true);
-    }
-    translate([-tw/3+0.75,-2.6,h/2-2.298/2])cube([1,2,2.5],center=true);
-    
-    // Other side of diode
-    translate([-tw/4.167,by/3-0.41,h/2-2.298/2]){
-      rube([1.1,2.05,2.7],center=true);
-      translate([-1.35,0.63,0])rube([0.8,0.8,2.7],center=true);
-      translate([-1.35,-0.63,0])rube([0.8,0.8,2.7],center=true);
-      translate([0.225,-1,0.5])cube([0.65,2,1.5],center=true);
-    }
-    
-    // Mid to diode/clickbar connector
-    translate([-tw/5,-3.1,h/2-2.897/2])cube([2,1,2.901],center=true);
-    
-    
-
-    
-
-    // Top mid cross cut
-    translate([0,0,h/2-0.85/2]){
-      translate([0,0,(0.85/2)-2.899/2])cube([2.4,by-1.498,2.901],center=true);
-      translate([0,by/2+0.75,0])cube([5,3,0.86],center=true);
-      translate([0,-by/2-0.75,0])cube([5,3,0.86],center=true);
-    }
-    
-    // Mid hollower
-    translate([0,0,h/2-2.899]){
-      linear_extrude(2.901)stemprofile(0.1);
-      translate([0.15,0,0])linear_extrude(2.901)stemprofile(0.1);
-      translate([-0.2,0,0])linear_extrude(2.901)stemprofile(0.1);
-      translate([0.35,0,0])linear_extrude(2.901)stemprofile(0.1,5);
-    }
-    
-    
-    // Leaf place
-    translate([bx/2-5/2-0.751,0,h/2-1.2/2]){
-      rube([5,2,1.2],center=true);
-      translate([0,0,1.2/2])rube([5,2,1.2],center=true);
-    }
-    translate([bx/2-0.9115,1.25,0.5])cube([0.32,6,h],center=true);
-    translate([bx/2-0.9115,0,0])cube([0.32,1.4,h+2],center=true);
-    translate([4.25,by/3-0.14,0.5]){
-      rube([1,1.5,h],center=true);
-      translate([0.7,-0.25,0])rube([2.3,1,h],center=true);
-      translate([0.7,0.25,0])rube([1.2,1,h],center=true);
-      #translate([1.35,0.26,0])cylinder(d=1,h=h/2,center=true);
-    }
-    
-    
-    
+  union(){
+    difference(){
+      union(){ // main block
+        translate([0,0,0.7])linear_extrude(0.8)ooo(2)square([tw,tw],center=true);
+        translate([0,0,-0.3])linear_extrude(1)ooo(2)square([13.8,13.6],center=true);
         
-    // Side cuts for clips
-    translate([bx/4+0.04,by/2-0.025,0])sideCutForClips();
-    translate([bx/4+0.04,-by/2+0.025,0])sideCutForClips();
-    translate([-bx/4-0.04,by/2-0.025,0])sideCutForClips();
-    translate([-bx/4-0.04,-by/2+0.025,0])sideCutForClips();
+        translate([0,0,-0.3])hull(){
+          translate([0,0,0])linear_extrude(0.01)ooo(2)square([13.8,13.6],center=true);
+          translate([0,0,-1.2])linear_extrude(0.01)ooo(2)square([13.1,13.1],center=true);
+        }
+      }
+      
+      // holes for the little pegs on the underside of the top
+      translate([bx/2-0.8,by/2-0.8,0])undersidePegOnTop();
+      translate([-bx/2+0.8,by/2-0.8,0])undersidePegOnTop();
+      translate([bx/2-0.8,-by/2+0.8,0])undersidePegOnTop();
+      translate([-bx/2+0.8,-by/2+0.8,0])undersidePegOnTop();
+      
+      // Big hole for diodes
+      translate([-tw/2+3.25/2+1.2,-0.125,0])rube([3.25,5.05,5],center=true);
+      // clickbar holder
+      translate([-tw/2+3.2/2+1.2,-by/3.128,h/2-2.5/2+0.2])hull(){
+        rube([1.8,1.9,2.7],center=true);
+        translate([1.9/4.07,0,1.1])linear_extrude(0.01)ooo(0.2)square([2.4,1.9],center=true);
+      }
+      translate([-tw/3+0.75,-2.6,h/2-2.298/2])cube([1,2,2.5],center=true);
+      
+      // Other side of diode
+      translate([-tw/4.167,by/3-0.41,h/2-2.298/2]){
+        rube([1.1,2.05,2.7],center=true);
+        translate([-1.35,0.63,0])rube([0.8,0.8,2.7],center=true);
+        translate([-1.35,-0.63,0])rube([0.8,0.8,2.7],center=true);
+        translate([0.225,-1,0.5])cube([0.65,2,1.5],center=true);
+      }
+      
+      // Mid to diode/clickbar connector
+      translate([-tw/5,-3.1,h/2-2.897/2])cube([2,1,2.901],center=true);
+      
+      
+
+      
+
+      // Top mid cross cut
+      translate([0,0,h/2-0.85/2]){
+        translate([0,0,(0.85/2)-2.899/2])cube([2.4,by-1.498,2.901],center=true);
+        translate([0,by/2+0.75,0])cube([5,3,0.86],center=true);
+        translate([0,-by/2-0.75,0])cube([5,3,0.86],center=true);
+      }
+      
+      // Mid hollower
+      translate([0,0,h/2-2.899]){
+        linear_extrude(2.901)stemprofile(0.1);
+        translate([0.15,0,0])linear_extrude(2.901)stemprofile(0.1);
+        translate([-0.2,0,0])linear_extrude(2.901)stemprofile(0.1);
+        translate([0.35,0,0])linear_extrude(2.901)stemprofile(0.1,5);
+      }
+      
+      
+      // Leaf place
+      translate([bx/2-5/2-0.751,0,h/2-1.2/2]){
+        rube([5,2,1.2],center=true);
+        translate([0,0,1.2/2])rube([5,2,1.2],center=true);
+      }
+      translate([bx/2-0.9115,1.45,0.5])cube([0.32,6.4,h],center=true);
+      translate([bx/2-1.98,0.04,h/2-0.2])rube([1,9,2],center=true);
+      translate([bx/2-0.9115,0,0])cube([0.32,1.4,h+2],center=true);
+      translate([4.25,by/3-0.14,0.5]){
+        translate([0.5,0,0])rube([2,1.5,h],center=true);
+        translate([0.7,-0.25,0])rube([2.3,1,h],center=true);
+        translate([0.7,0.25,0])rube([1.2,1,h],center=true);
+        translate([1.377,0.249,0])bullet(d=1,h=h);
+
+      }
+      translate([bx/2-2.63,by/2-3.7,h/2-0.198]){
+        rube([1,2,2],center=true);
+        translate([0.325,-0.2,0])rube([1.65,1,h],center=true);
+      }
+      
+      translate([bx/2-1.98,1.5,1])rube([1,1.3,h],center=true);
+      translate([bx/2-1.98,-1.3,1])rube([1,0.9,h],center=true);
+      
+      translate([bx/2-2.825,-by/2+3.4,h/2-0.2]){
+        translate([0,-0.2,-1]){
+          rube([0.7,3.08,h],center=true);
+          translate([0,-1,-2])cube([0.3,0.8,h+2],center=true);
+        }
+        translate([0.925,0.14,0])rube([2.55,2.4,2],center=true);
+        translate([0.7+0.6,-0.5,0]){
+          translate([0,0.295,0])rube([0.7,3.09,h],center=true);
+          translate([0.3,0.84,0])rube([1.2,2,h],center=true);
+          translate([0.294,0,0])rube([0.7,2.5,h],center=true);
+          translate([0.55,0,0])rube([0.7,2,h],center=true);
+          translate([0.4,-0.75,0])bullet(d=1,h=h);
+        }
+      }
+      
+      
+      
+      
+          
+      // Side cuts for clips
+      translate([bx/4+0.04,by/2-0.025,0])sideCutForClips();
+      translate([bx/4+0.04,-by/2+0.025,0])sideCutForClips();
+      translate([-bx/4-0.04,by/2-0.025,0])sideCutForClips();
+      translate([-bx/4-0.04,-by/2+0.025,0])sideCutForClips();
+      
+      translate([0,by/2+0.4,0])cube([6,1,2],center=true);
+      translate([0,-by/2-0.4,0])cube([6,1,2],center=true);
+      
+  //    translate([0,0,2.765])top();
+      
+      // Bottom
+      translate([-tw/3-1,0,-h/2])cube([tw/2,tw,0.1],center=true);
+      translate([tw/3+1,0,-h/2])cube([tw/2,tw,0.1],center=true);
+    }
     
-    translate([0,by/2+0.4,0])cube([6,1,2],center=true);
-    translate([0,-by/2-0.4,0])cube([6,1,2],center=true);
+    translate([0,0,-h/2])linear_extrude(0.1)stemprofile(0.1);
     
-//    translate([0,0,2.765])top();
-  }
+    // Middle peg
+    
+    translate([0,0,-h+0.25])middlePeg(3.2);
+    k=1.35;
+    translate([0,by/2-k,-h+0.25])middlePeg(1.6);
+    translate([0,-by/2+k,-h+0.25])middlePeg(1.6);
+    
    
+  }
   if(showGuides){
-   #translate([bx/2-0.525,by/2-0.0255,h/2]){cube([2.25,3,1],center=true);cube([5,1.45,1],center=true);}
+    #translate([0,0,-h/2-2.7]){
+      cube([tw,tw,0.1],center=true);
+      cube([1,12.5,1],center=true);
+      cube([1,9.3,2],center=true);
+    }
+   
+    #translate([bx/2-0.525,by/2-0.0255,h/2]){cube([2.25,3,1],center=true);cube([5,1.45,1],center=true);}
   
    #translate([-tw/4,by/2-1.2,h/2])cube([4,0.9,1],center=true);
     #translate([-tw/4,by/3-0.4,h/2])cube([4,0.5,1],center=true);
@@ -336,9 +398,11 @@ module bottom(){
     
     #translate([bx/2-0.0751-0.35,0,h/2])cube([2.1,by,1],center=true);
     #translate([bx/2-1,-tw/2+5.75/2,h/2])cube([2.1,5.75,1],center=true);
+    #translate([bx/2-2.18,-by/2+1.55,h/2])cube([0.6,1.6,1],center=true);
     #translate([bx/2-0.0751-1.2,0,h/2])cube([0.4,by,1],center=true);
 
     #translate([0,by/2-1.2,h/2])cube([tw,0.9,1],center=true);
+    #translate([0,-by/2+1.2,h/2])cube([tw,0.9,1],center=true);
     #translate([0,by/2-0.425,h/2-1])cube([4,0.65,1],center=true);
     #translate([-bx/2+0.75,-by/5-0.3039,h/2])cube([2.75,0.75,1],center=true);
   #translate([-bx/5,0,h/2])cube([0.6,tw,1],center=true);
@@ -356,6 +420,13 @@ module switch(){
 //  #translate([0,0,3])top();
 //  #stem();
   bottom();
+}
+
+module middlePeg(d=3.2){
+  hull(){
+    translate([0,0,1/2])cylinder(d=d,h=1.8,center=true);
+    translate([0,0,-1.8/2])cylinder(d=d-1,h=1,center=true);
+  }
 }
 
 
