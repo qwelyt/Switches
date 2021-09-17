@@ -1,10 +1,19 @@
 $fn=30;
+showGuides=false;
 module ooo(r=0.1){
   offset(r)offset(-(r*2))offset(r)children();
 }
 
-module rube(size=[1,1,1],center=false,r=0.2){
+module rube(size=[1,1,1],center=false,r=0.2,type="s"){
   module s(){sphere(r=r);}
+  module c(){cylinder(r=r,h=r*2,center=true);}
+  module m(){
+    if(type == "c"){
+      c();
+    } else {
+      s();
+    }
+  }
   
   tx=size[0] - r;
   ty=size[1] - r;
@@ -15,28 +24,28 @@ module rube(size=[1,1,1],center=false,r=0.2){
   
   translate(cntr)hull(){
     //bottom
-    translate([r,r,r])s();
-    translate([tx,r,r])s();
-    translate([r,ty,r])s();
-    translate([tx,ty,r])s();
+    translate([r,r,r])m();
+    translate([tx,r,r])m();
+    translate([r,ty,r])m();
+    translate([tx,ty,r])m();
     
     //top
-    translate([r,r,tz])s();
-    translate([tx,r,tz])s();
-    translate([r,ty,tz])s();
-    translate([tx,ty,tz])s();
+    translate([r,r,tz])m();
+    translate([tx,r,tz])m();
+    translate([r,ty,tz])m();
+    translate([tx,ty,tz])m();
   }
 }
 
-module stemprofile(extra=0){
+module stemprofile(extra=0,notch=5.6){
   ooo(){
     x=4.4+extra;
     y=10.2+extra;
-    x2=5.6+extra;
+    x2=notch+extra;
     y2=3+extra;
     square([x,y],center=true);
     translate([(x2-x)/2,0,0])square([x2,y2],center=true);
-    }
+  }
 }
 
 module top(){
@@ -207,12 +216,147 @@ module stem(){
   
 }
 
-module bottom(){}
+module bottom(){
+  tw=15;
+  bx=13.75;
+  by=13.6;
+  h=0.8+1+1.2;
+  module undersidePegOnTop(){
+    translate([0,0,1.5])cylinder(d=1,h=0.8,center=true);
+  }
+  module sideCutForClips(){
+    cube([3.5,1.451,h+2],center=true);
+    hull(){
+      cube([3.5,1.451,h/2],center=true);
+      translate([0,0,-h/2])cube([3.5,2.1,0.01],center=true);
+    }
+  }
+  difference(){
+    union(){ // main block
+      translate([0,0,0.7])linear_extrude(0.8)ooo(2)square([tw,tw],center=true);
+      translate([0,0,-0.3])linear_extrude(1)ooo(2)square([13.8,13.6],center=true);
+      
+      translate([0,0,-0.3])hull(){
+        translate([0,0,0])linear_extrude(0.01)ooo(2)square([13.8,13.6],center=true);
+        translate([0,0,-1.2])linear_extrude(0.01)ooo(2)square([13.1,13.1],center=true);
+      }
+    }
+    
+    // holes for the little pegs on the underside of the top
+    translate([bx/2-0.8,by/2-0.8,0])undersidePegOnTop();
+    translate([-bx/2+0.8,by/2-0.8,0])undersidePegOnTop();
+    translate([bx/2-0.8,-by/2+0.8,0])undersidePegOnTop();
+    translate([-bx/2+0.8,-by/2+0.8,0])undersidePegOnTop();
+    
+    // Big hole for diodes
+    translate([-tw/2+3.25/2+1.2,-0.125,0])rube([3.25,5.05,5],center=true);
+    // clickbar holder
+    translate([-tw/2+3.2/2+1.2,-by/3.128,h/2-2.5/2+0.2])hull(){
+      rube([1.8,1.9,2.7],center=true);
+      translate([1.9/4.07,0,1.1])linear_extrude(0.01)ooo(0.2)square([2.4,1.9],center=true);
+    }
+    translate([-tw/3+0.75,-2.6,h/2-2.298/2])cube([1,2,2.5],center=true);
+    
+    // Other side of diode
+    translate([-tw/4.167,by/3-0.41,h/2-2.298/2]){
+      rube([1.1,2.05,2.7],center=true);
+      translate([-1.35,0.63,0])rube([0.8,0.8,2.7],center=true);
+      translate([-1.35,-0.63,0])rube([0.8,0.8,2.7],center=true);
+      translate([0.225,-1,0.5])cube([0.65,2,1.5],center=true);
+    }
+    
+    // Mid to diode/clickbar connector
+    translate([-tw/5,-3.1,h/2-2.897/2])cube([2,1,2.901],center=true);
+    
+    
+
+    
+
+    // Top mid cross cut
+    translate([0,0,h/2-0.85/2]){
+      translate([0,0,(0.85/2)-2.899/2])cube([2.4,by-1.498,2.901],center=true);
+      translate([0,by/2+0.75,0])cube([5,3,0.86],center=true);
+      translate([0,-by/2-0.75,0])cube([5,3,0.86],center=true);
+    }
+    
+    // Mid hollower
+    translate([0,0,h/2-2.899]){
+      linear_extrude(2.901)stemprofile(0.1);
+      translate([0.15,0,0])linear_extrude(2.901)stemprofile(0.1);
+      translate([-0.2,0,0])linear_extrude(2.901)stemprofile(0.1);
+      translate([0.35,0,0])linear_extrude(2.901)stemprofile(0.1,5);
+    }
+    
+    
+    // Leaf place
+    translate([bx/2-5/2-0.751,0,h/2-1.2/2]){
+      rube([5,2,1.2],center=true);
+      translate([0,0,1.2/2])rube([5,2,1.2],center=true);
+    }
+    translate([bx/2-0.9115,1.25,0.5])cube([0.32,6,h],center=true);
+    translate([bx/2-0.9115,0,0])cube([0.32,1.4,h+2],center=true);
+    translate([4.25,by/3-0.14,0.5]){
+      rube([1,1.5,h],center=true);
+      translate([0.7,-0.25,0])rube([2.3,1,h],center=true);
+      translate([0.7,0.25,0])rube([1.2,1,h],center=true);
+      #translate([1.35,0.26,0])cylinder(d=1,h=h/2,center=true);
+    }
+    
+    
+    
+        
+    // Side cuts for clips
+    translate([bx/4+0.04,by/2-0.025,0])sideCutForClips();
+    translate([bx/4+0.04,-by/2+0.025,0])sideCutForClips();
+    translate([-bx/4-0.04,by/2-0.025,0])sideCutForClips();
+    translate([-bx/4-0.04,-by/2+0.025,0])sideCutForClips();
+    
+    translate([0,by/2+0.4,0])cube([6,1,2],center=true);
+    translate([0,-by/2-0.4,0])cube([6,1,2],center=true);
+    
+//    translate([0,0,2.765])top();
+  }
+   
+  if(showGuides){
+   #translate([bx/2-0.525,by/2-0.0255,h/2]){cube([2.25,3,1],center=true);cube([5,1.45,1],center=true);}
+  
+   #translate([-tw/4,by/2-1.2,h/2])cube([4,0.9,1],center=true);
+    #translate([-tw/4,by/3-0.4,h/2])cube([4,0.5,1],center=true);
+    #translate([-tw/4-0.6,by/2-2.575,h/2])cube([0.4,3.65,1],center=true);
+   
+    #translate([-bx/2+3.8/2-0.625,by/5+0.03,h/2])cube([3.8,0.7,1],center=true);
+  #translate([bx/2-4.9/2+0.625,by/4,h/2])cube([4.9,1,1],center=true);
+    
+    #translate([3.175,0,h/2]){
+      translate([0,by/2-by/5-0.3,0])cube([1.15,by/3,1],center=true);
+      translate([-0.025,-by/2+by/5+0.3,0])cube([1.1,by/3,1],center=true);
+    }
+  #translate([bx/2-3.9/2+0.625,0,h/2])cube([3.9,1,1],center=true);
+    #translate([bx/2-0.0751,0,h/2])cube([1.4,by,1],center=true);
+    
+    #translate([bx/2-0.0751-0.35,0,h/2])cube([2.1,by,1],center=true);
+    #translate([bx/2-1,-tw/2+5.75/2,h/2])cube([2.1,5.75,1],center=true);
+    #translate([bx/2-0.0751-1.2,0,h/2])cube([0.4,by,1],center=true);
+
+    #translate([0,by/2-1.2,h/2])cube([tw,0.9,1],center=true);
+    #translate([0,by/2-0.425,h/2-1])cube([4,0.65,1],center=true);
+    #translate([-bx/2+0.75,-by/5-0.3039,h/2])cube([2.75,0.75,1],center=true);
+  #translate([-bx/5,0,h/2])cube([0.6,tw,1],center=true);
+  #translate([-bx/2-0.02,0,h/2])cube([1.2,7,1],center=true);
+  #translate([-bx/2+0.325,-by/3,h/2])cube([1.9,2,1],center=true);
+ 
+
+  #translate([3,0,-h/2])cube([1,11.45,1],center=true);
+//  #square(15,center=true);
+  #translate([6.5,0,0])cube([1,1,3],center=true);
+ }
+}
 
 module switch(){
-//  top();
-  stem();
+//  #translate([0,0,3])top();
+//  #stem();
   bottom();
 }
+
 
 switch();
