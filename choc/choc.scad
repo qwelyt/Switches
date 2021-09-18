@@ -246,6 +246,12 @@ module bottom(){
       translate([0,0,-h/2])cube([3.5,2.1,0.01],center=true);
     }
   }
+  
+  module sidePegHook(){
+    rotate([90,0,0])
+    rotate([0,90,0])
+    cylinder($fn=3,h=1,d=0.8,center=true);
+  }
   union(){
     difference(){
       union(){ // main block
@@ -364,13 +370,46 @@ module bottom(){
     
     translate([0,0,-h/2])linear_extrude(0.1)stemprofile(0.1);
     
-    // Middle peg
+    // Bottom pegs
+    translate([0,0,-h+0.2]){
+      middlePeg(3.2);
+      k=1.35;
+      translate([0,by/2-k,0])middlePeg(1.6);
+      translate([0,-by/2+k,0])middlePeg(1.6);
+    }
     
-    translate([0,0,-h+0.25])middlePeg(3.2);
-    k=1.35;
-    translate([0,by/2-k,-h+0.25])middlePeg(1.6);
-    translate([0,-by/2+k,-h+0.25])middlePeg(1.6);
+    // Middle cylinder
+    difference(){
+      w=2.6;
+      h=3;
+      cylinder(d=w,h=h,center=true);
+      cylinder(d=w-0.4,h=h+1,center=true);
+    }
     
+    // Clickbar guard
+    translate([-2.75,-2.3,h/2+0.65/2]){
+      hull(){
+        cube([0.6,0.6,0.65],center=true);
+        translate([0,0.7,-0.4])cube([0.6,0.6,0.1],center=true);
+      }
+      hull(){
+        translate([0,0,0.3])cube([0.6,0.6,0.1],center=true);
+        translate([-0.4,0,0])cube([0.6,0.6,0.1],center=true);
+      }
+    }
+    
+ 
+    // little side peg hooks
+    {
+      spacing=bx/4;
+      side=by/2-0.6;
+      hp=h/2-0.4;
+      translate([spacing,side,hp])sidePegHook();
+      translate([-spacing,side,hp])sidePegHook();
+      
+      translate([spacing,side*-1,hp])rotate([180,0,0])sidePegHook();
+      translate([-spacing,side*-1,hp])rotate([180,0,0])sidePegHook();
+    }
    
   }
   if(showGuides){
@@ -422,10 +461,10 @@ module switch(){
   bottom();
 }
 
-module middlePeg(d=3.2){
+module middlePeg(d=3.2,ht=1.7,hb=1){
   hull(){
-    translate([0,0,1/2])cylinder(d=d,h=1.8,center=true);
-    translate([0,0,-1.8/2])cylinder(d=d-1,h=1,center=true);
+    translate([0,0,hb/2])cylinder(d=d,h=ht,center=true);
+    translate([0,0,-ht/2])cylinder(d=d-1,h=hb,center=true);
   }
 }
 
